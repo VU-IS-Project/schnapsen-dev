@@ -1,5 +1,12 @@
-from schnapsen.game import Bot, PlayerPerspective, SchnapsenDeckGenerator, Move, Trick, GamePhase
-from typing import List, Optional, cast, Literal
+from schnapsen.game import (
+    Bot,
+    PlayerPerspective,
+    SchnapsenDeckGenerator,
+    Move,
+    Trick,
+    GamePhase,
+)
+from typing import List, Tuple, Optional, cast, Literal
 from schnapsen.deck import Suit, Rank
 from sklearn.neural_network import MLPClassifier
 from sklearn.linear_model import LogisticRegression
@@ -44,14 +51,22 @@ class MLPlayingBot(Bot):
             follower_move_representation = get_move_feature_vector(None)
             for my_move_representation in my_move_representations:
                 action_state_representations.append(
-                    state_representation + my_move_representation + follower_move_representation)
+                    state_representation
+                    + my_move_representation
+                    + follower_move_representation
+                )
         else:
             for my_move_representation in my_move_representations:
                 action_state_representations.append(
-                    state_representation + leader_move_representation + my_move_representation)
+                    state_representation
+                    + leader_move_representation
+                    + my_move_representation
+                )
 
         model_output = self.__model.predict_proba(action_state_representations)
-        winning_probabilities_of_moves = [outcome_prob[1] for outcome_prob in model_output]
+        winning_probabilities_of_moves = [
+            outcome_prob[1] for outcome_prob in model_output
+        ]
         highest_value: float = -1
         best_move: Move
         for index, value in enumerate(winning_probabilities_of_moves):
@@ -84,7 +99,7 @@ class MLDataBot(Bot):
 
     def get_move(self, state: PlayerPerspective, leader_move: Optional[Move]) -> Move:
         """
-            This function simply calls the get_move of the provided bot
+        This function simply calls the get_move of the provided bot
         """
         return self.bot.get_move(state=state, leader_move=leader_move)
 
@@ -98,7 +113,9 @@ class MLDataBot(Bot):
         """
         # we retrieve the game history while actually discarding the last useless history record (which is after the game has ended),
         # we know none of the Tricks can be None because that is only for the last record
-        game_history: list[tuple[PlayerPerspective, Trick]] = cast(list[tuple[PlayerPerspective, Trick]], state.get_game_history()[:-1])
+        game_history: list[tuple[PlayerPerspective, Trick]] = cast(
+            List[Tuple[PlayerPerspective, Trick]], state.get_game_history()[:-1]
+        )
         # we also save the training label "won or lost"
         won_label = won
 
@@ -116,20 +133,30 @@ class MLDataBot(Bot):
             if round_player_perspective.am_i_leader():
                 follower_move = None
 
-            state_actions_representation = create_state_and_actions_vector_representation(
-                state=round_player_perspective, leader_move=leader_move, follower_move=follower_move)
+            state_actions_representation = (
+                create_state_and_actions_vector_representation(
+                    state=round_player_perspective,
+                    leader_move=leader_move,
+                    follower_move=follower_move,
+                )
+            )
 
             # append replay memory to file
-            with open(file=self.replay_memory_file_path, mode="a") as replay_memory_file:
+            with open(
+                file=self.replay_memory_file_path, mode="a"
+            ) as replay_memory_file:
                 # replay_memory_line: List[Tuple[list, number]] = [state_actions_representation, won_label]
                 # writing to replay memory file in the form "[feature list] || int(won_label)]
-                replay_memory_file.write(f"{str(state_actions_representation)[1:-1]} || {int(won_label)}\n")
+                replay_memory_file.write(
+                    f"{str(state_actions_representation)[1:-1]} || {int(won_label)}\n"
+                )
 
 
-def train_ML_model(replay_memory_location: Optional[pathlib.Path],
-                   model_location: Optional[pathlib.Path],
-                   model_class: Literal["NN", "LR"] = "LR"
-                   ) -> None:
+def train_ML_model(
+    replay_memory_location: Optional[pathlib.Path],
+    model_location: Optional[pathlib.Path],
+    model_class: Literal["NN", "LR"] = "LR",
+) -> None:
     """
     Train the ML model for the MLPlayingBot based on replay memory stored byt the MLDataBot.
     This implementation has the option to train a neural network model or a model based on linear regression.
@@ -141,10 +168,12 @@ def train_ML_model(replay_memory_location: Optional[pathlib.Path],
     :param overwrite: Whether to overwrite a possibly existing model.
     """
     if replay_memory_location is None:
-        replay_memory_location = pathlib.Path('ML_replay_memories') / 'test_replay_memory'
+        replay_memory_location = (
+            pathlib.Path("ML_replay_memories") / "test_replay_memory"
+        )
     if model_location is None:
-        model_location = pathlib.Path("ML_models") / 'test_model'
-    assert model_class == 'NN' or model_class == 'LR', "Unknown model class"
+        model_location = pathlib.Path("ML_models") / "test_model"
+    assert model_class == "NN" or model_class == "LR", "Unknown model class"
 
     # check that the replay memory dataset is found at the specified location
     if not replay_memory_location.exists():
@@ -153,7 +182,8 @@ def train_ML_model(replay_memory_location: Optional[pathlib.Path],
     # Check if model exists already
     if model_location.exists():
         raise ValueError(
-            f"Model at {model_location} exists already and overwrite is set to False. \nNo new model will be trained, process terminates")
+            f"Model at {model_location} exists already and overwrite is set to False. \nNo new model will be trained, process terminates"
+        )
 
     # check if directory exists, and if not, then create it
     model_location.parent.mkdir(parents=True, exist_ok=True)
@@ -176,7 +206,7 @@ def train_ML_model(replay_memory_location: Optional[pathlib.Path],
     print("Samples of losses:", samples_of_losses)
 
     # What type of model will be used depends on the value of the parameter use_neural_network
-    if model_class == 'NN':
+    if model_class == "NN":
         #############################################
         # Neural Network model parameters :
         # learn more about the model or how to use better use it by checking out its documentation
@@ -189,7 +219,7 @@ def train_ML_model(replay_memory_location: Optional[pathlib.Path],
         # needs a bigger dataset, but if you find the correct combination of neurons and neural layers and provide a big enough training dataset can lead to better performance
 
         # one layer of 30 neurons
-        hidden_layer_sizes = (30)
+        hidden_layer_sizes = 30
         # two layers of 30 and 5 neurons respectively
         # hidden_layer_sizes = (30, 5)
 
@@ -201,10 +231,16 @@ def train_ML_model(replay_memory_location: Optional[pathlib.Path],
         regularization_strength = 0.0001
 
         # Train a neural network
-        learner = MLPClassifier(hidden_layer_sizes=hidden_layer_sizes, learning_rate_init=learning_rate,
-                                alpha=regularization_strength, verbose=True, early_stopping=True, n_iter_no_change=6,
-                                activation='tanh')
-    elif model_class == 'LR':
+        learner = MLPClassifier(
+            hidden_layer_sizes=hidden_layer_sizes,
+            learning_rate_init=learning_rate,
+            alpha=regularization_strength,
+            verbose=True,
+            early_stopping=True,
+            n_iter_no_change=6,
+            activation="tanh",
+        )
+    elif model_class == "LR":
         # Train a simpler Linear Logistic Regression model
         # learn more about the model or how to use better use it by checking out its documentation
         # https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression
@@ -222,11 +258,12 @@ def train_ML_model(replay_memory_location: Optional[pathlib.Path],
     # Save the model in a file
     joblib.dump(model, model_location)
     end = time.time()
-    print('The model was trained in ', (end - start) / 60, 'minutes.')
+    print("The model was trained in ", (end - start) / 60, "minutes.")
 
 
-def create_state_and_actions_vector_representation(state: PlayerPerspective, leader_move: Optional[Move],
-                                                   follower_move: Optional[Move]) -> List[int]:
+def create_state_and_actions_vector_representation(
+    state: PlayerPerspective, leader_move: Optional[Move], follower_move: Optional[Move]
+) -> List[int]:
     """
     This function takes as input a PlayerPerspective variable, and the two moves of leader and follower,
     and returns a list of complete feature representation that contains all information
@@ -235,7 +272,11 @@ def create_state_and_actions_vector_representation(state: PlayerPerspective, lea
     leader_move_representation = get_move_feature_vector(leader_move)
     follower_move_representation = get_move_feature_vector(follower_move)
 
-    return player_game_state_representation + leader_move_representation + follower_move_representation
+    return (
+        player_game_state_representation
+        + leader_move_representation
+        + follower_move_representation
+    )
 
 
 def get_one_hot_encoding_of_card_suit(card_suit: Suit) -> List[int]:
@@ -295,10 +336,10 @@ def get_one_hot_encoding_of_card_rank(card_rank: Rank) -> List[int]:
 
 def get_move_feature_vector(move: Optional[Move]) -> List[int]:
     """
-        In case there isn't any move provided move to encode, we still need to create a "padding"-"meaningless" vector of the same size,
-        filled with 0s, since the ML models need to receive input of the same dimensionality always.
-        Otherwise, we create all the information of the move i) move type, ii) played card rank and iii) played card suit
-        translate this information into one-hot vectors respectively, and concatenate these vectors into one move feature representation vector
+    In case there isn't any move provided move to encode, we still need to create a "padding"-"meaningless" vector of the same size,
+    filled with 0s, since the ML models need to receive input of the same dimensionality always.
+    Otherwise, we create all the information of the move i) move type, ii) played card rank and iii) played card suit
+    translate this information into one-hot vectors respectively, and concatenate these vectors into one move feature representation vector
     """
 
     if move is None:
@@ -321,27 +362,35 @@ def get_move_feature_vector(move: Optional[Move]) -> List[int]:
             move_type_one_hot_encoding = [1, 0, 0]
             card = move.card
         move_type_one_hot_encoding_numpy_array = move_type_one_hot_encoding
-        card_rank_one_hot_encoding_numpy_array = get_one_hot_encoding_of_card_rank(card.rank)
-        card_suit_one_hot_encoding_numpy_array = get_one_hot_encoding_of_card_suit(card.suit)
+        card_rank_one_hot_encoding_numpy_array = get_one_hot_encoding_of_card_rank(
+            card.rank
+        )
+        card_suit_one_hot_encoding_numpy_array = get_one_hot_encoding_of_card_suit(
+            card.suit
+        )
 
-    return move_type_one_hot_encoding_numpy_array + card_rank_one_hot_encoding_numpy_array + card_suit_one_hot_encoding_numpy_array
+    return (
+        move_type_one_hot_encoding_numpy_array
+        + card_rank_one_hot_encoding_numpy_array
+        + card_suit_one_hot_encoding_numpy_array
+    )
 
 
 def get_state_feature_vector(state: PlayerPerspective) -> List[int]:
     """
-        This function gathers all subjective information that this bot has access to, that can be used to decide its next move, including:
-        - points of this player (int)
-        - points of the opponent (int)
-        - pending points of this player (int)
-        - pending points of opponent (int)
-        - the trump suit (1-hot encoding)
-        - phase of game (1-hoy encoding)
-        - talon size (int)
-        - if this player is leader (1-hot encoding)
-        - What is the status of each card of the deck (where it is, or if its location is unknown)
+    This function gathers all subjective information that this bot has access to, that can be used to decide its next move, including:
+    - points of this player (int)
+    - points of the opponent (int)
+    - pending points of this player (int)
+    - pending points of opponent (int)
+    - the trump suit (1-hot encoding)
+    - phase of game (1-hoy encoding)
+    - talon size (int)
+    - if this player is leader (1-hot encoding)
+    - What is the status of each card of the deck (where it is, or if its location is unknown)
 
-        Important: This function should not include the move of this agent.
-        It should only include any earlier actions of other agents (so the action of the other agent in case that is the leader)
+    Important: This function should not include the move of this agent.
+    It should only include any earlier actions of other agents (so the action of the other agent in case that is the leader)
     """
     # a list of all the features that consist the state feature set, of type np.ndarray
     state_feature_list: list[int] = []
@@ -420,7 +469,9 @@ def get_state_feature_vector(state: PlayerPerspective) -> List[int]:
         else:
             card_knowledge_in_one_hot_encoding = [1, 0, 0, 0, 0, 0]
         # This list eventually develops to one long 1-dimensional numpy array of shape (120,)
-        deck_knowledge_in_consecutive_one_hot_encodings += card_knowledge_in_one_hot_encoding
+        deck_knowledge_in_consecutive_one_hot_encodings += (
+            card_knowledge_in_one_hot_encoding
+        )
     # deck_knowledge_flattened: np.ndarray = np.concatenate(tuple(deck_knowledge_in_one_hot_encoding), axis=0)
 
     # add this features to the feature set
