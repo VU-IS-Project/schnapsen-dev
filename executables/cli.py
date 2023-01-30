@@ -15,6 +15,8 @@ from schnapsen.twenty_four_card_schnapsen import \
 
 from schnapsen.bots.rdeep import RdeepBot
 
+from schnapsen.bots.ml_bot import MLDataBot, MLPlayingBot
+
 
 @click.group()
 def main() -> None:
@@ -49,6 +51,18 @@ def random_game() -> None:
         winner_id, game_points, score = engine.play_game(bot1, bot2, random.Random(i))
         print(f"Game ended. Winner is {winner_id} with {game_points} points, score {score}")
 
+@main.command()
+def test_game() -> None:
+    engine = SchnapsenGamePlayEngine()
+    bot1 = MLDataBot(RdeepBot(num_samples=4, depth=16, rand=random.Random(4564654644)), pathlib.Path('ML_replay_memories'))
+    bot2 = RdeepBot(num_samples=4, depth=16, rand=random.Random(4564654644))
+    
+    #play games and return stats
+    bot1_wins = play_games_and_return_stats(engine, bot1, bot2, 1000)
+    print(f"Bot 1 won {bot1_wins} out of 1000 games")
+
+    bot2_wins = play_games_and_return_stats(engine, bot2, bot1, 1000)
+    print(f"Bot 2 won {bot2_wins} out of 1000 games")
 
 class NotificationExampleBot(Bot):
 
