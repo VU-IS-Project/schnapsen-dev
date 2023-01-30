@@ -99,7 +99,7 @@ class RdeepBot(Bot):
         return heuristic
 
     def __repr__(self) -> str:
-        return f"Rdeep(smp={self.__num_samples}, dph={self.__depth})"
+        return f"Rdeep({self.__num_samples}s/{self.__depth}d)"
 
 
 class RandBot(Bot):
