@@ -98,8 +98,8 @@ class RdeepBot(Bot):
         heuristic = my_score / (my_score + opponent_score)
         return heuristic
 
-    def __str__(self) -> str:
-        return f"RdeepBot(smpls={self.__num_samples}, dpth={self.__depth})"
+    def __repr__(self) -> str:
+        return f"Rdeep(smp={self.__num_samples}, dph={self.__depth})"
 
 
 class RandBot(Bot):
