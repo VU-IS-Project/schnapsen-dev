@@ -76,6 +76,9 @@ class MLPlayingBot(Bot):
         assert best_move is not None
         return best_move
 
+    def __repr__(self) -> str:
+        return "MLBot"
+
 
 class MLDataBot(Bot):
     """
@@ -219,7 +222,7 @@ def train_ML_model(
         # needs a bigger dataset, but if you find the correct combination of neurons and neural layers and provide a big enough training dataset can lead to better performance
 
         # one layer of 30 neurons
-        hidden_layer_sizes = 30
+        hidden_layer_sizes = 42
         # two layers of 30 and 5 neurons respectively
         # hidden_layer_sizes = (30, 5)
 
@@ -228,7 +231,7 @@ def train_ML_model(
         learning_rate = 0.0001
 
         # The regularization term aims to prevent over-fitting, and we can tweak its strength here.
-        regularization_strength = 0.0001
+        regularization_strength = 0.00005
 
         # Train a neural network
         learner = MLPClassifier(
