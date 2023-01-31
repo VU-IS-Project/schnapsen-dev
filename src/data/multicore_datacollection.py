@@ -10,8 +10,8 @@ def collect_data(core_number) -> None:
     """Collect data from the sensors and store it in the database."""
     # define replay memory database creation parameters
     num_of_games: int = 10000
-    replay_memory_dir: str = "ML_replay_memories"
-    replay_memory_filename: str = "random_random_10k_games.txt"
+    replay_memory_dir: str = "generated_data"
+    replay_memory_filename: str = "dataset_rd32s16d_10k_games_{core_number}.txt"
     replay_memory_location = Path(replay_memory_dir) / replay_memory_filename
 
     bot_1_behaviour: Bot = RdeepBot(num_samples=32, depth=16, rand=Random(420420))
@@ -39,7 +39,7 @@ def collect_data(core_number) -> None:
 
     for i in range(1, num_of_games + 1):
         if i % 500 == 0:
-            print(f"Progress: {i}/{num_of_games}")
+            print(f"Progress: {i}/{num_of_games} on core {core_number}")
         engine.play_game(
             replay_memory_recording_bot_1, replay_memory_recording_bot_2, Random(i)
         )
