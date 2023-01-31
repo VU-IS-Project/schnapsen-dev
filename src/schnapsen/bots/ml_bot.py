@@ -158,7 +158,7 @@ class MLDataBot(Bot):
 def train_ML_model(
     replay_memory_location: Optional[pathlib.Path],
     model_location: Optional[pathlib.Path],
-    model_class: Literal["NN", "LR"] = "LR",
+    model_class: Literal["NN", "LR"] = "NN",
 ) -> None:
     """
     Train the ML model for the MLPlayingBot based on replay memory stored byt the MLDataBot.
@@ -176,7 +176,7 @@ def train_ML_model(
         )
     if model_location is None:
         model_location = pathlib.Path("ML_models") / "test_model"
-    assert model_class == "NN" or model_class == "LR", "Unknown model class"
+    assert model_class == "NN", "Unknown model class"
 
     # check that the replay memory dataset is found at the specified location
     if not replay_memory_location.exists():
@@ -208,51 +208,39 @@ def train_ML_model(
     print("Samples of wins:", samples_of_wins)
     print("Samples of losses:", samples_of_losses)
 
-    # What type of model will be used depends on the value of the parameter use_neural_network
-    if model_class == "NN":
-        #############################################
-        # Neural Network model parameters :
-        # learn more about the model or how to use better use it by checking out its documentation
-        # https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html#sklearn.neural_network.MLPClassifier
-        # Play around with the model parameters below
-        print("Training a Complex (Neural Network) model.")
+    #############################################
+    # Neural Network model parameters :
+    # learn more about the model or how to use better use it by checking out its documentation
+    # https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html#sklearn.neural_network.MLPClassifier
+    # Play around with the model parameters below
+    print("Training a Complex (Neural Network) model.")
 
-        # Feel free to experiment with different number of neural layers or differnt type of neurons per layer
-        # Tips: more neurons or more layers of neurons create a more complicated model that takes more time to train and
-        # needs a bigger dataset, but if you find the correct combination of neurons and neural layers and provide a big enough training dataset can lead to better performance
+    # Feel free to experiment with different number of neural layers or differnt type of neurons per layer
+    # Tips: more neurons or more layers of neurons create a more complicated model that takes more time to train and
+    # needs a bigger dataset, but if you find the correct combination of neurons and neural layers and provide a big enough training dataset can lead to better performance
 
-        # one layer of 30 neurons
-        hidden_layer_sizes = 42
-        # two layers of 30 and 5 neurons respectively
-        # hidden_layer_sizes = (30, 5)
+    # one layer of 30 neurons
+    hidden_layer_sizes = (50, 30, 10)
+    # two layers of 30 and 5 neurons respectively
+    # hidden_layer_sizes = (30, 5)
 
-        # The learning rate determines how fast we move towards the optimal solution.
-        # A low learning rate will converge slowly, but a large one might overshoot.
-        learning_rate = 0.0001
+    # The learning rate determines how fast we move towards the optimal solution.
+    # A low learning rate will converge slowly, but a large one might overshoot.
+    learning_rate = 0.0001
 
-        # The regularization term aims to prevent over-fitting, and we can tweak its strength here.
-        regularization_strength = 0.00005
+    # The regularization term aims to prevent over-fitting, and we can tweak its strength here.
+    regularization_strength = 0.00008
 
-        # Train a neural network
-        learner = MLPClassifier(
-            hidden_layer_sizes=hidden_layer_sizes,
-            learning_rate_init=learning_rate,
-            alpha=regularization_strength,
-            verbose=True,
-            early_stopping=True,
-            n_iter_no_change=6,
-            activation="tanh",
-        )
-    elif model_class == "LR":
-        # Train a simpler Linear Logistic Regression model
-        # learn more about the model or how to use better use it by checking out its documentation
-        # https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression
-        print("Training a Simple (Linear Logistic Regression model)")
-
-        # Usually there is no reason to change the hyperparameters of such a simple model but fill free to experiment:
-        learner = LogisticRegression(max_iter=1000)
-    else:
-        raise AssertionError("Unknown model class")
+    # Train a neural network
+    learner = MLPClassifier(
+        hidden_layer_sizes=hidden_layer_sizes,
+        learning_rate_init=learning_rate,
+        alpha=regularization_strength,
+        verbose=True,
+        early_stopping=True,
+        n_iter_no_change=6,
+        activation="tanh",
+    )
 
     start = time.time()
     print("Starting training phase...")
