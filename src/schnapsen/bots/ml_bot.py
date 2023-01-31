@@ -197,12 +197,17 @@ def train_ML_model(
 
     with open(file=replay_memory_location, mode="r") as replay_memory_file:
         for line in replay_memory_file:
-            feature_string, won_label_str = line.split("||")
-            feature_list_strings: list[str] = feature_string.split(",")
-            feature_list = [int(feature) for feature in feature_list_strings]
-            won_label = int(won_label_str)
-            data.append(feature_list)
-            targets.append(won_label)
+            try:
+                feature_string, won_label_str = line.split("||")
+                feature_list_strings: list[str] = feature_string.split(",")
+                feature_list = [int(feature) for feature in feature_list_strings]
+                won_label = int(won_label_str)
+                data.append(feature_list)
+                targets.append(won_label)
+            except ValueError:
+                print(
+                    f"Warning: line {line} in replay memory file {replay_memory_location} is not in the correct format and will be ignored"
+                )
 
     print("Dataset Statistics:")
     samples_of_wins = sum(targets)
@@ -211,9 +216,9 @@ def train_ML_model(
     print("Samples of losses:", samples_of_losses)
 
     ### MODEL TRAINING ###
-    hidden_layer_sizes = (30, 5)
+    hidden_layer_sizes = (500, 50)
     learning_rate = 0.0001
-    regularization_strength = 0.00008
+    regularization_strength = 0.0001
 
     learner = MLPClassifier(
         hidden_layer_sizes=hidden_layer_sizes,
