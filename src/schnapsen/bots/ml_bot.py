@@ -162,14 +162,14 @@ def train_ML_model(
 ) -> None:
     """
     Train the ML model for the MLPlayingBot based on replay memory stored byt the MLDataBot.
-    This implementation has the option to train a neural network model or a model based on linear regression.
-    The model classes used in this implemntation are not necesarily optimal.
+    This implementation uses a neural network model.
 
     :param replay_memory_location: Location of the games stored by MLDataBot, default pathlib.Path('ML_replay_memories') / 'test_replay_memory'
     :param model_location: Location where the model will be stored, default pathlib.Path("ML_models") / 'test_model'
     :param model_class: The machine learning model class to be used, either 'NN' for a neural network, or 'LR' for a linear regression.
     :param overwrite: Whether to overwrite a possibly existing model.
     """
+    ### SETUP ###
     if replay_memory_location is None:
         replay_memory_location = (
             pathlib.Path("ML_replay_memories") / "test_replay_memory"
@@ -191,8 +191,10 @@ def train_ML_model(
     # check if directory exists, and if not, then create it
     model_location.parent.mkdir(parents=True, exist_ok=True)
 
+    ### DATASET PREPARATION ###
     data: list[list[int]] = []
     targets: list[int] = []
+
     with open(file=replay_memory_location, mode="r") as replay_memory_file:
         for line in replay_memory_file:
             feature_string, won_label_str = line.split("||")
@@ -208,30 +210,11 @@ def train_ML_model(
     print("Samples of wins:", samples_of_wins)
     print("Samples of losses:", samples_of_losses)
 
-    #############################################
-    # Neural Network model parameters :
-    # learn more about the model or how to use better use it by checking out its documentation
-    # https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html#sklearn.neural_network.MLPClassifier
-    # Play around with the model parameters below
-    print("Training a Complex (Neural Network) model.")
-
-    # Feel free to experiment with different number of neural layers or differnt type of neurons per layer
-    # Tips: more neurons or more layers of neurons create a more complicated model that takes more time to train and
-    # needs a bigger dataset, but if you find the correct combination of neurons and neural layers and provide a big enough training dataset can lead to better performance
-
-    # one layer of 30 neurons
-    hidden_layer_sizes = (50, 30, 10)
-    # two layers of 30 and 5 neurons respectively
-    # hidden_layer_sizes = (30, 5)
-
-    # The learning rate determines how fast we move towards the optimal solution.
-    # A low learning rate will converge slowly, but a large one might overshoot.
+    ### MODEL TRAINING ###
+    hidden_layer_sizes = (30, 5)
     learning_rate = 0.0001
-
-    # The regularization term aims to prevent over-fitting, and we can tweak its strength here.
     regularization_strength = 0.00008
 
-    # Train a neural network
     learner = MLPClassifier(
         hidden_layer_sizes=hidden_layer_sizes,
         learning_rate_init=learning_rate,
