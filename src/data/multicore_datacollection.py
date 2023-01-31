@@ -11,7 +11,7 @@ def collect_data(core_number) -> None:
     # define replay memory database creation parameters
     num_of_games: int = 10000
     replay_memory_dir: str = "generated_data"
-    replay_memory_filename: str = "dataset_rd32s16d_10k_games_{core_number}.txt"
+    replay_memory_filename: str = f"dataset_rd32s16d_10k_games_{core_number}.txt"
     replay_memory_location = Path(replay_memory_dir) / replay_memory_filename
 
     bot_1_behaviour: Bot = RdeepBot(num_samples=32, depth=16, rand=Random(420420))
